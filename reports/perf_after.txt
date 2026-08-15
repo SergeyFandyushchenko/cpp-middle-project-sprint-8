@@ -1,0 +1,28 @@
+# started on Sat Aug 15 16:13:22 2026
+
+
+ Performance counter stats for '/tmp/tmp.E84jGUNkK7/after' (5 runs):
+
+           2600.42 msec task-clock                       #    0.999 CPUs utilized               ( +-  1.50% )
+                22      context-switches                 #    8.460 /sec                        ( +- 15.84% )
+                 3      cpu-migrations                   #    1.154 /sec                        ( +- 21.08% )
+            781371      page-faults                      #  300.478 K/sec                       ( +-  0.00% )
+       10544606353      cpu_atom/instructions/           #    1.67  insn per cycle              ( +-  9.31% )  (0.06%)
+       25697475606      cpu_core/instructions/           #    2.62  insn per cycle              ( +-  0.07% )  (99.90%)
+        6332543147      cpu_atom/cycles/                 #    2.435 GHz                         ( +-  2.67% )  (0.06%)
+        9808483045      cpu_core/cycles/                 #    3.772 GHz                         ( +-  1.54% )  (99.90%)
+        1721592563      cpu_atom/branches/               #  662.043 M/sec                       ( +-  7.53% )  (0.09%)
+        4904769890      cpu_core/branches/               #    1.886 G/sec                       ( +-  0.08% )  (99.90%)
+          16818399      cpu_atom/branch-misses/          #    0.98% of all branches             ( +- 36.98% )  (0.10%)
+           1042650      cpu_core/branch-misses/          #    0.02% of all branches             ( +- 12.16% )  (99.90%)
+             TopdownL1 (cpu_core)                 #     38.9 %  tma_backend_bound      
+                                                  #      2.3 %  tma_bad_speculation    
+                                                  #     11.4 %  tma_frontend_bound     
+                                                  #     47.5 %  tma_retiring             ( +-  1.52% )  (99.90%)
+                                                  #     15.8 %  tma_bad_speculation    
+                                                  #     38.7 %  tma_retiring             ( +-  8.39% )  (0.10%)
+                                                  #     25.0 %  tma_backend_bound      
+                                                  #     20.6 %  tma_frontend_bound       ( +-  2.36% )  (0.10%)
+
+            2.6019 +- 0.0389 seconds time elapsed  ( +-  1.50% )
+

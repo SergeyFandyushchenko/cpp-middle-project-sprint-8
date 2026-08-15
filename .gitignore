@@ -1,6 +1,7 @@
 # Folders
 *.cache/
 *build/
+*build-asan/
 .idea/
 .vs/
 

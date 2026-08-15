@@ -18,23 +18,29 @@ std::string readFile(const std::filesystem::path &path) {
     return contents.str();
 }
 
-std::string refactor(std::string_view source) {
+std::string refactor(std::string_view source, std::string *log = nullptr) {
     static unsigned counter = 0;
     const auto path =
         std::filesystem::temp_directory_path() / ("refactor_tool_test_" + std::to_string(++counter) + ".cpp");
+    const auto logPath = path.string() + ".log";
 
     {
         std::ofstream output(path, std::ios::binary);
         output << source;
     }
 
-    const std::string command = quote(REFACTOR_TOOL_PATH) + " " + quote(path) + " -- -std=c++20";
+    const std::string command = quote(REFACTOR_TOOL_PATH) + " --log-file " + quote(logPath) + " " + quote(path) +
+                                " -- -std=c++20";
     const int result = std::system(command.c_str());
     EXPECT_EQ(result, 0) << "refactor_tool failed for " << path;
 
     const std::string transformed = readFile(path);
+    if (log != nullptr) {
+        *log = readFile(logPath);
+    }
     std::error_code error;
     std::filesystem::remove(path, error);
+    std::filesystem::remove(logPath, error);
     return transformed;
 }
 
@@ -133,4 +139,39 @@ void f() {
     EXPECT_NE(result.find("const int value"), std::string::npos);
     EXPECT_EQ(result.find("const int& value"), std::string::npos);
     EXPECT_EQ(result.find("const Item&& item"), std::string::npos);
+}
+
+TEST(Override, HandlesConstAndRvalueReferenceSuffixes) {
+    const auto result = refactor(R"cpp(
+struct Base {
+    virtual void f() const && = 0;
+    virtual void g() const = 0;
+};
+struct Derived : Base {
+    void f() const /* keep suffix comment */ && {}
+    void g() const {}
+};
+)cpp");
+
+    EXPECT_NE(result.find("void f() const /* keep suffix comment */ && override"), std::string::npos);
+    EXPECT_NE(result.find("void g() const override"), std::string::npos);
+}
+
+TEST(Logging, WritesAppliedChangesToFile) {
+    std::string log;
+    refactor(R"cpp(
+struct Base {
+    virtual void f() = 0;
+    ~Base() = default;
+};
+struct Derived : Base {
+    void f() {}
+};
+)cpp",
+             &log);
+
+    EXPECT_NE(log.find("add virtual destructor"), std::string::npos);
+    EXPECT_NE(log.find("add override"), std::string::npos);
+    EXPECT_NE(log.find("Base"), std::string::npos);
+    EXPECT_NE(log.find("Derived::f"), std::string::npos);
 }

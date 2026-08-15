@@ -32,6 +32,70 @@
             "group": {
                 "kind": "build"
             }
+        },
+        {
+            "label": "ASAN: Build Debug",
+            "type": "shell",
+            "command": [
+                "mkdir ${workspaceFolder}/build-asan ; ",
+                "cd ${workspaceFolder}/build-asan &&",
+                "cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON -DCT_Clang_INSTALL_DIR=/usr/lib/llvm-20/ && cmake --build ."
+            ],
+            "presentation": {
+                "clear": true
+            },
+            "hide": false,
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "Reports: ASAN",
+            "type": "shell",
+            "command": "bash \"${workspaceFolder}/scripts/asan_report.sh\" \"${workspaceFolder}/build/refactor_tool\" \"${workspaceFolder}/reports\"",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "dependsOn": "GCC: Build Debug",
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+            "presentation": {
+                "clear": true,
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Reports: perf",
+            "type": "shell",
+            "command": "bash \"${workspaceFolder}/scripts/perf_report.sh\" \"${workspaceFolder}/build/refactor_tool\" \"${workspaceFolder}/reports\"",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "dependsOn": "GCC: Build Debug",
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+            "presentation": {
+                "clear": true,
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Reports: ASAN + perf",
+            "dependsOn": [
+                "Reports: ASAN",
+                "Reports: perf"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean: build and reports",
+            "type": "shell",
+            "command": "rm -rf \"${workspaceFolder}/build\" \"${workspaceFolder}/build-asan\" \"${workspaceFolder}/reports\"",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
         }
     ]
 }

@@ -12,6 +12,7 @@
 #include "llvm/Support/CommandLine.h"
 
 #include <cctype>
+#include <fstream>
 #include <string>
 
 using namespace clang;
@@ -21,6 +22,8 @@ using namespace clang::tooling;
 namespace {
 
 llvm::cl::OptionCategory toolCategory("refactor-tool options");
+llvm::cl::opt<std::string> logFile("log-file", llvm::cl::desc("Path to refactoring log file"),
+                                   llvm::cl::init("refactor.log"), llvm::cl::cat(toolCategory));
 
 bool isEditableMainFileLocation(SourceLocation location, const SourceManager &sm) {
     if (location.isInvalid() || location.isMacroID()) {
@@ -31,6 +34,30 @@ bool isEditableMainFileLocation(SourceLocation location, const SourceManager &sm
 
 unsigned locationKey(SourceLocation location, const SourceManager &sm) {
     return sm.getFileOffset(sm.getSpellingLoc(location));
+}
+
+void logChange(llvm::StringRef change, llvm::StringRef entity, SourceLocation location, const SourceManager &sm) {
+    if (logFile.empty()) {
+        return;
+    }
+
+    const PresumedLoc presumed = sm.getPresumedLoc(sm.getSpellingLoc(location));
+    if (presumed.isInvalid()) {
+        return;
+    }
+
+    std::ofstream output(logFile.getValue(), std::ios::app);
+    if (!output) {
+        llvm::errs() << "Cannot open refactoring log file: " << logFile.getValue() << "\n";
+        return;
+    }
+
+    output << change.str() << " | " << presumed.getFilename() << ':' << presumed.getLine() << ':'
+           << presumed.getColumn();
+    if (!entity.empty()) {
+        output << " | " << entity.str();
+    }
+    output << '\n';
 }
 
 std::string insertionBeforeToken(SourceLocation tokenLocation, const SourceManager &sm, llvm::StringRef text) {
@@ -154,6 +181,7 @@ void RefactorHandler::handle_nv_dtor(const CXXDestructorDecl *dtor, DiagnosticsE
     const unsigned diagID =
         diag.getCustomDiagID(DiagnosticsEngine::Remark, "added 'virtual' to destructor of base class '%0'");
     diag.Report(location, diagID) << dtor->getParent()->getName();
+    logChange("add virtual destructor", dtor->getParent()->getName(), location, sm);
 }
 
 void RefactorHandler::handle_miss_override(const CXXMethodDecl *method, DiagnosticsEngine &diag, SourceManager &sm) {
@@ -183,6 +211,7 @@ void RefactorHandler::handle_miss_override(const CXXMethodDecl *method, Diagnost
 
     const unsigned diagnosticId = diag.getCustomDiagID(DiagnosticsEngine::Remark, "added 'override' to method '%0'");
     diag.Report(methodLocation, diagnosticId) << method->getNameAsString();
+    logChange("add override", method->getQualifiedNameAsString(), methodLocation, sm);
 }
 
 // todo: необходимо реализовать обработку случая отсутствие & в range-for
@@ -218,6 +247,7 @@ void RefactorHandler::handle_crange_for(const VarDecl *loopVar, DiagnosticsEngin
     const unsigned diagID =
         diag.getCustomDiagID(DiagnosticsEngine::Remark, "changed range-for variable '%0' to const reference");
     diag.Report(loopVar->getLocation(), diagID) << loopVar->getName();
+    logChange("add const range-for reference", loopVar->getName(), loopVar->getLocation(), sm);
 }
 
 // todo: ниже необходимо реализовать матчеры для поиска узлов AST
@@ -287,6 +317,9 @@ int main(int argc, const char **argv) {
     }
 
     CommonOptionsParser &optionsParser = expectedParser.get();
+    if (!logFile.empty()) {
+        std::ofstream(logFile.getValue(), std::ios::trunc);
+    }
     // Создаем ClangTool
     ClangTool tool(optionsParser.getCompilations(), optionsParser.getSourcePathList());
     // Запускаем RefactorAction.

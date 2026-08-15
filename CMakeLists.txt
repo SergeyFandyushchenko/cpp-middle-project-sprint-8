@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(clang-tutor)
 
+option(ENABLE_ASAN "Enable AddressSanitizer for project targets" OFF)
+
 #===============================================================================
 # 0. GET CLANG INSTALLATION DIR
 #===============================================================================
@@ -99,6 +101,8 @@ endif()
 
 # Set the build directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+
+enable_testing()
 
 #===============================================================================
 # 4. ADD SUB-TARGETS
