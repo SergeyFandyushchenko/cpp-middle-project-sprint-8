@@ -22,7 +22,7 @@
 
 # set(CodeRefactor_SOURCES
 #   CodeRefactor.cpp)
-set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(refactor_tool RefactorTool.cpp)
@@ -34,7 +34,15 @@ target_include_directories(
   "${CMAKE_CURRENT_SOURCE_DIR}/../include"
 )
 
-target_link_libraries(refactor_tool PRIVATE clangTooling clangBasic clangASTMatchers)
+target_link_libraries(refactor_tool PRIVATE
+  clangAST
+  clangASTMatchers
+  clangBasic
+  clangFrontend
+  clangLex
+  clangRewrite
+  clangTooling
+)
 
 
 # # CONFIGURE THE PLUGIN LIBRARIES
