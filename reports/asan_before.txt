@@ -1,0 +1,13 @@
+
+=================================================================
+==25246==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 4000 byte(s) in 1 object(s) allocated from:
+    #0 0x5a157916cab1 in operator new[](unsigned long) (/tmp/tmp.hOxjYGCohE/before+0x115ab1) (BuildId: d74231bc21bb560e1fd2184114ad49364d750926)
+    #1 0x5a157916debd in Derived::Derived() /tmp/tmp.hOxjYGCohE/before.cpp:10:24
+    #2 0x5a157916de37 in main /tmp/tmp.hOxjYGCohE/before.cpp:17:21
+    #3 0x70f44c96e577  (/lib/x86_64-linux-gnu/libc.so.6+0x2a577) (BuildId: ae7440bbdce614e0e79280c3b2e45b1df44e639c)
+    #4 0x70f44c96e63a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a63a) (BuildId: ae7440bbdce614e0e79280c3b2e45b1df44e639c)
+    #5 0x5a1579084364 in _start (/tmp/tmp.hOxjYGCohE/before+0x2d364) (BuildId: d74231bc21bb560e1fd2184114ad49364d750926)
+
+SUMMARY: AddressSanitizer: 4000 byte(s) leaked in 1 allocation(s).
